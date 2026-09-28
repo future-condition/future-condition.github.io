@@ -1,733 +1,168 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LLM-Guided Future Hypotheses for Horizon-Aware Exploration in Multi-Step Robot Manipulation</title>
-  <meta name="description" content="Future-conditioned robot manipulation evaluated in RoboCasa, CALVIN, and on a real Franka Panda under imperfect future supervision." />
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101a2a">
+  <meta name="description" content="RAFC learns when to trust a generated future and which nearby temporal phase to use for robot manipulation.">
+  <title>RAFC | Reliability-Aware Future Conditioning</title>
   <style>
-    :root{
-      --text:#0f172a;
-      --muted:#475569;
-      --line:#e2e8f0;
-      --bg:#ffffff;
-      --accent:#2563eb;
-      --soft:#f8fafc;
-    }
-
-    *{ box-sizing:border-box; }
-
-    body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      line-height:1.6;
-    }
-
-    a{ color:var(--accent); text-decoration:none; }
-    a:hover{ text-decoration:underline; }
-
-    .wrap{
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 34px 18px 70px;
-    }
-
-    header{
-      text-align:center;
-      margin-bottom: 18px;
-    }
-
-    h1{
-      margin: 0 0 10px;
-      font-size: 30px;
-      font-weight: 800;
-      letter-spacing: .2px;
-    }
-
-    .authors{
-      margin: 0 0 6px;
-      color: var(--muted);
-      font-size: 15px;
-    }
-
-    .affil{
-      margin: 0 0 8px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .links{
-      margin: 8px 0 10px;
-      display:flex;
-      justify-content:center;
-      gap:16px;
-      flex-wrap:wrap;
-      font-size: 14px;
-      color: var(--muted);
-    }
-
-    .links a{ font-weight: 600; }
-
-    .pin{
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .claim{
-      margin: 14px auto 0;
-      max-width: 900px;
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    h2{
-      margin: 26px 0 10px;
-      padding-top: 18px;
-      border-top: 1px solid var(--line);
-      font-size: 22px;
-      font-weight: 800;
-    }
-
-    h3{
-      margin: 14px 0 8px;
-      font-size: 16px;
-      font-weight: 800;
-    }
-
-    p{ margin: 10px 0; }
-
-    .figure{
-      margin: 10px 0 8px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      overflow:hidden;
-      background: var(--soft);
-    }
-
-    .figure img{
-      width:100%;
-      height:auto;
-      display:block;
-    }
-
-    .figcap{
-      padding: 10px 12px;
-      font-size: 13px;
-      color: var(--muted);
-      border-top: 1px solid var(--line);
-      background: #fff;
-    }
-
-    .video{
-      margin: 14px 0 0;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      overflow:hidden;
-      background: var(--soft);
-    }
-
-    .video video{
-      width:100%;
-      height:auto;
-      display:block;
-      background: var(--soft);
-    }
-
-    .vmeta{
-      padding: 10px 12px;
-      font-size: 13px;
-      color: var(--muted);
-      border-top: 1px solid var(--line);
-      background:#fff;
-    }
-
-    code{
-      background:#eef2ff;
-      border:1px solid #e0e7ff;
-      padding: 1px 6px;
-      border-radius: 999px;
-      font-size: .92em;
-    }
-
-    pre{
-      margin: 0;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: var(--soft);
-      overflow:auto;
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .anim-wrap{
-      margin: 18px 0 10px;
-      border:1px solid var(--line);
-      border-radius:18px;
-      background:linear-gradient(180deg,#fbfdff 0%, #f8fbff 100%);
-      overflow:hidden;
-      box-shadow: 0 8px 24px rgba(15,23,42,0.05);
-    }
-
-    .anim-head{
-      padding: 16px 18px 12px;
-      border-bottom:1px solid var(--line);
-      background:#fff;
-    }
-
-    .anim-head h3{
-      margin:0 0 4px;
-      font-size:18px;
-    }
-
-    .anim-head p{
-      margin:0;
-      color:var(--muted);
-      font-size:13px;
-    }
-
-    .anim-inner{
-      padding: 18px 14px 14px;
-    }
-
-    .pipeline-svg{
-      width:100%;
-      height:auto;
-      display:block;
-    }
-
-    .step-box{
-      fill:#ffffff;
-      stroke:#cbd5e1;
-      stroke-width:2;
-      rx:20;
-      ry:20;
-      filter: drop-shadow(0 6px 18px rgba(15,23,42,0.06));
-      transition: fill .25s ease, stroke .25s ease;
-    }
-
-    .step-label{
-      font-size:15px;
-      font-weight:700;
-      fill:#0f172a;
-      text-anchor:middle;
-    }
-
-    .step-sub{
-      font-size:11.5px;
-      fill:#64748b;
-      text-anchor:middle;
-    }
-
-    .step-icon{
-      font-size:23px;
-      text-anchor:middle;
-    }
-
-    .step-group{
-      opacity:0;
-      transition: opacity .35s ease;
-      pointer-events:none;
-    }
-
-    .step-group.visible{
-      opacity:1;
-    }
-
-    .step-group.active .step-box{
-      fill:#eff6ff;
-      stroke:#60a5fa;
-    }
-
-    .step-group.done .step-box{
-      fill:#f0fdf4;
-      stroke:#4ade80;
-    }
-
-    .flow-progress{
-      fill:none;
-      stroke:#2563eb;
-      stroke-width:5;
-      stroke-linecap:round;
-      stroke-dasharray:1000;
-      stroke-dashoffset:1000;
-      filter: drop-shadow(0 0 2px rgba(37,99,235,.35));
-    }
-
-    .pulse-dot{
-      fill:#2563eb;
-      opacity:0;
-      filter: drop-shadow(0 0 5px rgba(37,99,235,.5));
-    }
-
-    .notes-grid{
-      display:grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 12px;
-      padding: 6px 14px 16px;
-    }
-
-    .note-card{
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:#fff;
-      padding:12px 12px;
-      font-size:12.5px;
-      color:var(--muted);
-      min-height:90px;
-      opacity:.52;
-      transition: all .3s ease;
-      line-height:1.45;
-      overflow-wrap:anywhere;
-    }
-
-    .note-card strong{
-      display:block;
-      color:var(--text);
-      margin-bottom:4px;
-      font-size:12.5px;
-      line-height:1.35;
-    }
-
-    .note-card.active{
-      opacity:1;
-      border-color:#93c5fd;
-      background:#f8fbff;
-      box-shadow: 0 4px 16px rgba(37,99,235,0.08);
-      transform: translateY(-1px);
-    }
-
-    .results-grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:14px;
-    }
-
-    .footer{
-      margin-top: 28px;
-      padding-top: 16px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 13px;
-      display:flex;
-      justify-content:space-between;
-      gap: 10px;
-      flex-wrap:wrap;
-    }
-
-    @media (max-width: 980px){
-      .notes-grid{
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 760px){
-      .notes-grid{
-        grid-template-columns: 1fr;
-      }
-      h1{ font-size:26px; }
-      .claim{ font-size:16px; }
-    }
+    :root { --ink:#142238; --sub:#516075; --line:#dce5eb; --paper:#f5f8f8; --white:#fff; --navy:#101a2a; --teal:#087e80; --teal-light:#e8f6f3; --gold:#d2a85a; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; color:var(--ink); background:var(--paper); font:16px/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+    a { color:var(--teal); }
+    .shell { width:min(1120px,calc(100% - 40px)); margin:auto; }
+    .hero { color:#fff; background:radial-gradient(circle at 86% 12%,#1a565d 0,transparent 36%),linear-gradient(145deg,#101a2a,#14263b 68%,#123e45); padding:24px 0 64px; }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:20px; font-size:14px; }
+    .mark { font-weight:900; font-size:21px; letter-spacing:.1em; color:#fff; text-decoration:none; }
+    .navlinks { display:flex; flex-wrap:wrap; gap:20px; }
+    .navlinks a { color:#dceceb; text-decoration:none; }
+    .navlinks a:hover { color:#fff; text-decoration:underline; }
+    .intro { max-width:930px; padding-top:70px; }
+    .eyebrow { margin:0 0 14px; color:#9ce4d9; font-size:13px; letter-spacing:.17em; font-weight:800; text-transform:uppercase; }
+    h1 { margin:0; font-size:clamp(34px,5.5vw,65px); line-height:1.1; letter-spacing:-.04em; }
+    .subtitle { margin:20px 0 0; max-width:840px; color:#d9e5e8; font-size:clamp(17px,2.2vw,22px); line-height:1.5; }
+    .affils { margin:26px 0 0; display:flex; flex-wrap:wrap; gap:7px 18px; color:#b6d6d5; font-size:14px; }
+    .affils span + span::before { content:"•"; color:var(--gold); margin-right:18px; }
+    .video-feature { position:relative; margin:-34px auto 0; background:#0c1725; border:1px solid #29434e; border-radius:20px; overflow:hidden; box-shadow:0 28px 70px rgba(10,29,47,.2); }
+    .video-head { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; align-items:baseline; padding:16px 22px; background:#112335; color:#fff; }
+    .video-head strong { font-size:18px; }
+    .video-head span { color:#aac6c7; font-size:13px; }
+    .video-feature video { display:block; width:100%; aspect-ratio:16/9; background:#0c1725; }
+    .video-foot { padding:12px 22px; color:#b9d5d7; font-size:13px; background:#112335; }
+    .video-foot a { color:#9de8dc; }
+    main section { padding:74px 0 0; scroll-margin-top:20px; }
+    .section-label { margin:0 0 8px; text-transform:uppercase; letter-spacing:.16em; font-size:12px; font-weight:900; color:var(--teal); }
+    h2 { font-size:clamp(27px,3.3vw,40px); line-height:1.18; letter-spacing:-.03em; margin:0 0 17px; }
+    h3 { line-height:1.26; margin:0 0 9px; font-size:19px; }
+    p { margin:0 0 15px; }
+    .lede { max-width:880px; font-size:18px; color:#34475a; }
+    .kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:28px; }
+    .kpi,.card,.panel { background:var(--white); border:1px solid var(--line); border-radius:16px; }
+    .kpi { padding:23px; }
+    .kpi b { display:block; font-size:clamp(30px,3.7vw,43px); line-height:1.12; color:var(--teal); letter-spacing:-.045em; }
+    .kpi span { display:block; margin-top:10px; font-size:14px; color:var(--sub); }
+    .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:15px; margin-top:25px; }
+    .card { padding:23px; }
+    .card .num { display:inline-grid; place-items:center; width:33px; height:33px; border-radius:10px; background:var(--teal-light); color:var(--teal); font-weight:800; margin-bottom:18px; }
+    .card p { color:var(--sub); font-size:15px; margin-bottom:0; }
+    .flow { margin-top:22px; display:grid; grid-template-columns:1fr auto 1fr auto 1fr; align-items:stretch; gap:12px; }
+    .flow div { padding:16px; text-align:center; border:1px solid #acd6d0; border-radius:12px; background:#eef8f6; font-weight:700; font-size:14px; }
+    .flow i { align-self:center; color:var(--teal); font-style:normal; font-size:24px; }
+    .panel { padding:24px; margin-top:22px; }
+    .panel h3 { margin-bottom:6px; }
+    .panel > p { color:var(--sub); font-size:14px; }
+    .table-scroll { overflow-x:auto; margin-top:16px; }
+    table { width:100%; border-collapse:collapse; font-size:14px; min-width:580px; }
+    th,td { padding:11px 12px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap; }
+    th:first-child,td:first-child { text-align:left; font-weight:600; }
+    th { color:#385061; background:#f3f8f8; font-size:12px; letter-spacing:.02em; }
+    tbody tr:last-child td { border-bottom:0; }
+    tr.highlight { background:#e9f6f2; color:#075f62; font-weight:800; }
+    .note { margin-top:12px; font-size:13px; color:var(--sub); }
+    .split { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .bars { margin-top:20px; display:grid; gap:17px; }
+    .bar-row { display:grid; grid-template-columns:160px 1fr 55px; align-items:center; gap:12px; font-size:14px; }
+    .track { background:#e6edef; border-radius:999px; height:12px; overflow:hidden; }
+    .fill { display:block; height:100%; background:var(--teal); border-radius:999px; }
+    .bar-row:first-child .fill { background:#7992a4; }
+    .bar-row:nth-child(2) .fill { background:#92bbad; }
+    .bar-row b { text-align:right; }
+    .footer { margin-top:82px; padding:30px 0 44px; border-top:1px solid var(--line); color:var(--sub); font-size:13px; }
+    @media (max-width:800px) { .cards,.kpis,.split { grid-template-columns:1fr; } .flow { grid-template-columns:1fr; } .flow i { transform:rotate(90deg); justify-self:center; line-height:12px; } .affils { display:block; } .affils span { display:block; } .affils span + span::before { content:none; } }
+    @media (max-width:580px) { .shell { width:min(100% - 28px,1120px); } .hero { padding-bottom:57px; } .intro { padding-top:45px; } .nav { align-items:flex-start; } .navlinks { gap:8px 13px; justify-content:flex-end; } .video-head,.video-foot { padding:12px 14px; } main section { padding-top:56px; } .bar-row { grid-template-columns:114px 1fr 45px; gap:8px; font-size:12px; } }
   </style>
 </head>
-
 <body>
-  <div class="wrap">
-
-    <header>
-      <h1>LLM-Guided Future Hypotheses for Horizon-Aware Exploration in Multi-Step Robot Manipulation</h1>
-
-      <!-- <div class="authors">
-        <strong>Mohammad Khoshnazar</strong> · <strong>Andrew Melnik</strong> · <strong>Michael Beetz</strong>
-      </div> -->
-
-      <!-- <div class="affil">
-        University of Bremen · Institute of Artificial Intelligence
-      </div> -->
-
-      <div class="links">
-        <a href="#" target="_blank" rel="noopener">Paper</a>
-        <a href="https://enact2026.github.io/" target="_blank" rel="noopener">Project</a>
-        <a href="https://github.com/mkhoshnam/enact" target="_blank" rel="noopener">Code</a>
-        <a href="#results">Videos</a>
-        <a href="#results">Results</a>
-        <a href="#bibtex">BibTeX</a>
-      </div>
-
-      <div class="pin"></div>
-
-      <div class="claim">
-        We study how short-horizon future videos improve robot manipulation during closed-loop execution and RL fine-tuning, evaluating the framework extensively in simulation and validating generated-future-conditioned policies on a real Franka Panda.
-      </div>
-
-      <figure class="figure main-figure">
-  <img
-    src="Main-PipeLine.jpg"
-    alt="Overview of the ENACT pipeline: task reasoning, digital-twin rollout, video inpainting, and future-conditioned policy."
-  />
-  <figcaption class="figcap">
-    Overview of our pipeline. The system reasons about the task, predicts
-    digital-twin state transitions, generates a future video, and conditions
-    the robot policy on the predicted future.
-  </figcaption>
-</figure>
-
-      <div class="video" style="margin-top:16px;">
-        <video controls playsinline autoplay muted loop preload="metadata">
-          <source src="closedrawer_sync_web.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-        <div class="vmeta"></div>
-      </div>
-
-      <div class="video" style="margin-top:14px;">
-        <video controls playsinline autoplay muted loop preload="metadata">
-          <source src="open_kettle_three_panel_web.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-        <div class="vmeta">Real-robot validation · Franka Panda</div>
-      </div>
-
-      
-    </header>
-
-    <h2 id="abstract">Abstract</h2>
-    <p>
-      Multi-step robot manipulation requires acting under uncertainty about how the scene will evolve. Tasks such as opening drawers, moving sliders, turning switches, and interacting with articulated objects depend on contact timing, object motion, and delayed task progress. We study whether short-horizon future videos can provide useful conditioning signals for closed-loop robot control and reinforcement-learning fine-tuning. We formulate this setting as <strong>Future-Experience Conditioning (FEC)</strong>, where a policy receives recent observations together with a compact latent representation of a short future video. During training, this future signal can be taken from demonstrations. At inference time, ground-truth futures are unavailable, so we evaluate generated futures and intentionally mismatched futures to study robustness to imperfect future supervision. We conduct extensive simulation experiments on RoboCasa and CALVIN and validate generated-future-conditioned execution on a real Franka Panda across opening a kettle, closing a kettle, and closing a microwave. We compare behavior cloning, behavior cloning with RL fine-tuning, and a future-conditioned policy baseline under no-future, ground-truth-future, generated-future, and wrong-future conditions. The results show that task-consistent future conditioning improves policy execution and RL adaptation, while mismatched futures reveal the importance of reliability-aware conditioning. Together, the simulation benchmarks and real-robot demonstrations show that short-horizon visual futures provide practical structured priors for manipulation policies under imperfect future predictions.
-    </p>
-
-    <div class="anim-wrap">
-      <div class="anim-head">
-        <h3>Step-by-step future-conditioning pipeline</h3>
-        <p></p>
-      </div>
-
-      <div class="anim-inner">
-        <svg class="pipeline-svg" viewBox="0 0 1120 330" xmlns="http://www.w3.org/2000/svg" aria-label="Animated ENACT pipeline">
-          <g id="step1" class="step-group visible active">
-            <rect class="step-box" x="20" y="60" width="190" height="120" />
-            <text class="step-icon" x="115" y="96">📝</text>
-            <text class="step-label" x="115" y="121">Command + Obs</text>
-            <text class="step-sub" x="115" y="143">current RGB + task text</text>
-            <text class="step-sub" x="115" y="160">input at time t</text>
-          </g>
-
-          <g id="step2" class="step-group">
-            <rect class="step-box" x="240" y="60" width="190" height="120" />
-            <text class="step-icon" x="335" y="96">🧠</text>
-            <text class="step-label" x="335" y="121">Task Grounding</text>
-            <text class="step-sub" x="335" y="143">target object / part</text>
-            <text class="step-sub" x="335" y="160">desired state change</text>
-          </g>
-
-          <g id="step3" class="step-group">
-            <rect class="step-box" x="460" y="60" width="190" height="120" />
-            <text class="step-icon" x="555" y="96">🪟</text>
-            <text class="step-label" x="555" y="121">Future Rollout</text>
-            <text class="step-sub" x="555" y="143">short-horizon</text>
-            <text class="step-sub" x="555" y="160">object motion cue</text>
-          </g>
-
-          <g id="step4" class="step-group">
-            <rect class="step-box" x="680" y="60" width="190" height="120" />
-            <text class="step-icon" x="775" y="96">🎬</text>
-            <text class="step-label" x="775" y="121">Future Video</text>
-            <text class="step-sub" x="775" y="143">generated visual</text>
-            <text class="step-sub" x="775" y="160">future signal</text>
-          </g>
-
-          <g id="step5" class="step-group">
-            <rect class="step-box" x="900" y="60" width="190" height="120" />
-            <text class="step-icon" x="995" y="96">📦</text>
-            <text class="step-label" x="995" y="121">Future Tokens</text>
-            <text class="step-sub" x="995" y="143">encode + temporal bins</text>
-            <text class="step-sub" x="995" y="160">project to future latent</text>
-          </g>
-
-          <g id="step6" class="step-group">
-            <rect class="step-box" x="310" y="225" width="250" height="88" />
-            <text class="step-icon" x="365" y="260">🛡️</text>
-            <text class="step-label" x="435" y="257">RAFC Gate</text>
-            <text class="step-sub" x="435" y="279">null + shifted futures</text>
-            <text class="step-sub" x="435" y="294">reduce timing sensitivity</text>
-          </g>
-
-          <g id="step7" class="step-group">
-            <rect class="step-box" x="600" y="225" width="400" height="88" />
-            <text class="step-icon" x="670" y="260">🤖</text>
-            <text class="step-label" x="800" y="257">Policy</text>
-            <text class="step-sub" x="800" y="279">recent observations + reliable future latent + closed-loop action</text>
-          </g>
-
-          <path id="seg12" class="flow-progress" d="M210 120 L240 120" />
-          <path id="seg23" class="flow-progress" d="M430 120 L460 120" />
-          <path id="seg34" class="flow-progress" d="M650 120 L680 120" />
-          <path id="seg45" class="flow-progress" d="M870 120 L900 120" />
-          <path id="seg56a" class="flow-progress" d="M995 180 L995 210" />
-          <path id="seg56b" class="flow-progress" d="M995 210 L435 210" />
-          <path id="seg56c" class="flow-progress" d="M435 210 L435 225" />
-          <path id="seg67" class="flow-progress" d="M560 269 L600 269" />
-
-          <circle id="pulseDot" class="pulse-dot" cx="210" cy="120" r="8" />
-        </svg>
-      </div>
-
-      <div class="notes-grid">
-        <div id="note1" class="note-card active">
-          <strong>1. Define the task</strong>
-          The command and current observation are used to identify the intended manipulation target and desired object-state change.
-        </div>
-        <div id="note2" class="note-card">
-          <strong>2. Build a short future</strong>
-          A short-horizon future signal describes how the relevant object or articulated part should evolve.
-        </div>
-        <div id="note3" class="note-card">
-          <strong>3. Compress the future</strong>
-          The future video is encoded, pooled into temporal bins, and projected into a compact future-conditioning vector.
-        </div>
-        <div id="note4" class="note-card">
-          <strong>4. Reliability-aware mixing</strong>
-          RAFC compares the null future with shifted future candidates and gates how much the policy should trust the future signal.
-        </div>
-        <div id="note5" class="note-card">
-          <strong>5. Use it in closed loop</strong>
-          The policy uses recent observations and the reliable future latent to generate actions during closed-loop execution.
-        </div>
+  <header class="hero">
+    <div class="shell">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="mark" href="#top">RAFC</a>
+        <div class="navlinks"><a href="#overview">Overview</a><a href="#method">Method</a><a href="#results">Results</a><a href="#hardware">Real robot</a></div>
+      </nav>
+      <div id="top" class="intro">
+        <p class="eyebrow">Robot manipulation · Generated video · Reliability</p>
+        <h1>Reliability-Aware Future Conditioning for Temporally Robust Robot Manipulation</h1>
+        <p class="subtitle">A generated future can show the right task at the wrong time. RAFC learns how much of that future to trust before each action.</p>
+        <div class="affils" aria-label="Affiliations"><span>University of Bremen</span><span>University of North Texas</span><span>Toyota Motor North America</span></div>
       </div>
     </div>
+  </header>
 
-    <h2 id="approach">Approach</h2>
+  <div class="shell">
+    <section class="video-feature" aria-label="Research presentation video">
+      <div class="video-head"><strong>RAFC research presentation</strong><span>System overview · Method · Experiments</span></div>
+      <video controls playsinline preload="metadata" aria-label="RAFC research presentation"><source src="RAFC-SupVideo.mp4" type="video/mp4">Your browser does not support MP4 video.</video>
+      <div class="video-foot"><a href="RAFC-SupVideo.mp4" download>Download presentation video</a></div>
+    </section>
 
-    <p>
-      We study <em>control under imperfect future supervision</em>, where the future signal used during training is not identical to the future available at inference time. The policy is trained and evaluated with a compact representation of a short future video, while the source of that future can vary. This lets us compare no-future conditioning, ground-truth futures, generated futures, and intentionally wrong futures under the same control interface.
-    </p>
+    <main>
+      <section id="overview">
+        <p class="section-label">The problem</p>
+        <h2>The scene is right. The timing is wrong.</h2>
+        <p class="lede">Future-conditioned policies use a short generated video to anticipate the task. If the robot moves faster or slower than that video, a plausible future can become harmful guidance. On eight CALVIN tasks, a five-frame early shift drops generated-future success from <strong>69.8%</strong> to <strong>34.2%</strong>, below the <strong>54.0%</strong> policy without future guidance.</p>
+        <div class="kpis">
+          <div class="kpi"><b>+21.9</b><span>points on the six off-grid shifts, from 51.8% with the generated future to 73.7% with RAFC</span></div>
+          <div class="kpi"><b>+7.0</b><span>points over uniform averaging of the identical four-branch candidate bank</span></div>
+          <div class="kpi"><b>56.7%</b><span>aggregate Franka success with RAFC, versus 26.7% with plain FEC across 60 trials</span></div>
+        </div>
+      </section>
 
-    <h3>Task grounding and future construction</h3>
-    <p>
-      Given a task command and current scene information, the system creates a structured description of the manipulation goal, including the target object, relevant interaction part, and desired state transition. This description is used to construct a short-horizon visual future that represents the intended evolution of the task. The same future-conditioning interface is evaluated in simulation and used for closed-loop execution on real Franka Panda manipulation tasks.
-    </p>
+      <section id="method">
+        <p class="section-label">The approach</p>
+        <h2>Test nearby phases, then decide what to trust</h2>
+        <p class="lede">RAFC sits on top of Future-Experience Conditioning (FEC). One 16-frame future is generated at task initialization through language grounding, a robot-free digital-twin rollout, and video diffusion. The controller reuses that clip during execution; it does not regenerate video at every step.</p>
+        <div class="cards">
+          <article class="card"><span class="num">01</span><h3>Four candidate futures</h3><p>A static first-frame fallback and three dynamic versions of the received clip at local offsets −2, 0, and +2. Every candidate runs through the same frozen behavior-cloning policy.</p></article>
+          <article class="card"><span class="num">02</span><h3>Reliability and phase</h3><p>A learned gate sets dynamic trust α and weights the three temporal candidates. It blends policy features, future latents, and base actions without a shift label or alignment target.</p></article>
+          <article class="card"><span class="num">03</span><h3>Residual control</h3><p>A bounded residual actor corrects the blended base action. The gate and actor learn jointly from task reward while the base behavior-cloning policy stays frozen.</p></article>
+        </div>
+        <div class="flow" aria-label="RAFC inference flow"><div>Generated future<br><small>one clip at initialization</small></div><i aria-hidden="true">➜</i><div>Static + three temporal candidates<br><small>shared frozen BC policy</small></div><i aria-hidden="true">➜</i><div>Trust gate + residual action<br><small>closed-loop control</small></div></div>
+      </section>
 
-    <h3>Generated future signal</h3>
-    <p>
-      At inference time, ground-truth future frames from demonstrations are not available. We therefore use generated future clips as practical test-time conditioning signals in both simulation and real-robot experiments. These clips provide cues about upcoming object motion and interaction timing while naturally containing visual and temporal imperfections. Our three-panel real-robot videos show the generated future, the current camera observation, and the resulting Franka execution side by side.
-    </p>
+      <section id="results">
+        <p class="section-label">Simulation results</p>
+        <h2>Recovery when the future is out of phase</h2>
+        <p class="lede">CALVIN uses eight state-changing tasks and three training seeds. The global test shifts are deliberately off-grid relative to RAFC's local {−2, 0, +2} bank. The averages below exclude the zero-shift condition.</p>
+        <div class="panel">
+          <h3>CALVIN temporal shifts</h3>
+          <p>Task-balanced success (%), mean ± standard deviation across three seeds. The rightmost column averages the six nonzero shifts.</p>
+          <div class="table-scroll"><table><thead><tr><th>Condition</th><th>−5</th><th>−3</th><th>−1</th><th>0</th><th>+1</th><th>+3</th><th>+5</th><th>Shifted avg.</th></tr></thead><tbody>
+            <tr><td>NoFuture</td><td>54.0 ± 3.2</td><td>54.0 ± 3.2</td><td>54.0 ± 3.2</td><td>54.0 ± 3.2</td><td>54.0 ± 3.2</td><td>54.0 ± 3.2</td><td>54.0 ± 3.2</td><td>54.0</td></tr>
+            <tr><td>Generated future</td><td>34.2 ± 4.7</td><td>52.9 ± 3.5</td><td>64.6 ± 2.6</td><td>69.8 ± 2.1</td><td>65.3 ± 2.9</td><td>51.9 ± 3.6</td><td>41.6 ± 5.1</td><td>51.8</td></tr>
+            <tr><td>Shift augmentation</td><td>46.7 ± 3.0</td><td>67.4 ± 2.5</td><td>78.0 ± 1.7</td><td>80.5 ± 2.6</td><td>78.6 ± 3.2</td><td>67.0 ± 3.0</td><td>53.0 ± 2.2</td><td>65.1</td></tr>
+            <tr><td>Uniform averaging</td><td>49.6 ± 1.5</td><td>68.9 ± 2.8</td><td>78.4 ± 0.8</td><td>79.4 ± 1.8</td><td>79.0 ± 1.0</td><td>68.8 ± 2.1</td><td>55.5 ± 2.4</td><td>66.7</td></tr>
+            <tr class="highlight"><td>Generated future + RAFC</td><td>61.7 ± 4.9</td><td>76.8 ± 3.7</td><td>81.2 ± 2.4</td><td>82.3 ± 1.6</td><td>81.5 ± 2.6</td><td>76.0 ± 4.1</td><td>65.2 ± 5.0</td><td>73.7</td></tr>
+          </tbody></table></div>
+          <p class="note">The six nonzero imposed shifts are evaluation-only. RAFC is not given the applied shift.</p>
+        </div>
+        <div class="split">
+          <div class="panel"><h3>Beyond boundary repetition</h3><p>Distinct windows extracted from independently generated 28-frame sources remove the repeated-boundary-frame explanation. The shifted average rises from <strong>69.7%</strong> to <strong>75.6%</strong> with RAFC.</p><p>Under 0.75× and 1.25× rate warps, the average rises from <strong>58.6%</strong> to <strong>73.2%</strong>.</p></div>
+          <div class="panel"><h3>A timing change during execution</h3><p>After an unannounced step-40 change from zero to ±3 or ±5 frames, average success is <strong>65.7%</strong> with uniform averaging, <strong>68.9%</strong> with a learned constant gate, and <strong>75.4%</strong> with RAFC. The gate shifts candidate weight toward the compensating phase and lowers dynamic trust at the largest offsets.</p></div>
+        </div>
+        <div class="panel"><h3>Where the seven points come from</h3><p>Off-grid shifted average across the same candidate bank.</p><div class="bars" role="img" aria-label="Generated future 51.8 percent, uniform averaging 66.7 percent, RAFC 73.7 percent">
+          <div class="bar-row"><span>Generated future</span><div class="track"><span class="fill" style="width:51.8%"></span></div><b>51.8%</b></div>
+          <div class="bar-row"><span>Uniform averaging</span><div class="track"><span class="fill" style="width:66.7%"></span></div><b>66.7%</b></div>
+          <div class="bar-row"><span>Full RAFC</span><div class="track"><span class="fill" style="width:73.7%"></span></div><b>73.7%</b></div>
+        </div></div>
+        <div class="panel"><h3>Across benchmark scenes</h3><p>On the five evaluated unshifted RoboCasa tasks, the FEC + RAFC system reaches <strong>76.6%</strong> task-balanced success; CLOVER reaches 72.6%, SuSIE 63.5%, V2A 62.8%, and Diffusion Policy 39.3% in the paper's evaluation. These are system-level comparisons across different policy and future interfaces.</p></div>
+      </section>
 
-    <h3>Future-Experience Conditioning (FEC)</h3>
-    <p>
-      The future clip is encoded into per-frame embeddings, compressed into temporal bins, and projected into a fixed-dimensional future latent. This compact representation provides a common interface between future video signals and policy learning. We also test temporally shifted futures to evaluate how sensitive the policy is to timing mismatch in the future signal.
-    </p>
+      <section id="hardware">
+        <p class="section-label">Physical evaluation</p>
+        <h2>Improved real-robot manipulation</h2>
+        <p class="lede">On a Franka Panda, the same generated-future interface is evaluated with and without RAFC under natural, unmeasured timing variation. Each task has 20 trials per method.</p>
+        <div class="panel"><h3>Three Franka manipulation tasks</h3><div class="table-scroll"><table><thead><tr><th>Task</th><th>Plain FEC</th><th>FEC + RAFC</th></tr></thead><tbody>
+          <tr><td>Open kettle</td><td>3/20 (15%)</td><td>9/20 (45%)</td></tr>
+          <tr><td>Close kettle</td><td>5/20 (25%)</td><td>11/20 (55%)</td></tr>
+          <tr><td>Close microwave door</td><td>8/20 (40%)</td><td>14/20 (70%)</td></tr>
+          <tr class="highlight"><td>Aggregate</td><td>16/60 (26.7%)</td><td>34/60 (56.7%)</td></tr>
+        </tbody></table></div><p class="note">Physical timing offsets are not imposed or measured in these trials; the controlled timing intervention is the CALVIN study above.</p></div>
+      </section>
+    </main>
 
-    <h3>Reliability-Aware Future Conditioning (RAFC)</h3>
-    <p>
-      RAFC adds a lightweight reliability gate over a null future and temporally shifted future candidates. It is designed to reduce sensitivity to partially correct but misaligned generated futures, rather than to solve completely wrong future hypotheses.
-    </p>
-
-    <h3>Future-conditioned policy</h3>
-    <p>
-      The policy receives recent observations together with the compact future latent and outputs continuous actions in closed loop. We evaluate behavior cloning, behavior cloning with reinforcement-learning fine-tuning, and a future-conditioned comparison baseline. Simulation benchmarks measure execution quality, adaptation, temporal robustness, and sensitivity to incorrect futures, while real-robot experiments demonstrate generated-future-conditioned control on physical hardware.
-    </p>
-
-    <h2 id="results">Results</h2>
-
-    <div class="results-grid">
-      <div class="video">
-        <video controls playsinline autoplay muted loop preload="metadata">
-          <source src="close_microwave_three_panel_web.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-
-    <div class="results-grid">
-      <div class="video">
-        <video controls playsinline autoplay muted loop preload="metadata">
-          <source src="open_drawe_best.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-
-      <div class="video">
-        <video controls playsinline autoplay muted loop preload="metadata">
-          <source src="opne_single_door_web.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-
-      <div class="video">
-        <video controls playsinline autoplay muted loop preload="metadata">
-          <source src="move_slider_left_h264.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-
-      <div class="video">
-        <video controls playsinline autoplay muted loop preload="metadata">
-          <source src="close_kettle_three_panel_web.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-
-      <div class="video">
-        <video controls playsinline autoplay muted loop preload="metadata">
-          <source src="push_into_drawer_best.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-    </div>
-
-    <h2 id="bibtex">BibTeX</h2>
-    <pre>@misc{khoshnazar2026futurehypotheses,
-  title   = {LLM-Guided Future Hypotheses for Horizon-Aware Exploration in Multi-Step Robot Manipulation},
-  <!-- author  = {Khoshnazar, Mohammad and Melnik, Andrew}, -->
-  year    = {2026},
-  url     = {https://enact2026.github.io/}
-}</pre>
-
-    <div class="footer">
-      <div>© <span id="y"></span> Future-Conditioned Robot Manipulation</div>
-      <div>Built with GitHub Pages</div>
-    </div>
+    <footer class="footer">RAFC · University of Bremen · University of North Texas · Toyota Motor North America</footer>
   </div>
-
-  <script>
-    document.getElementById("y").textContent = new Date().getFullYear();
-
-    const allSteps = ["step1","step2","step3","step4","step5","step6","step7"];
-    const allNotes = ["note1","note2","note3","note4","note5"];
-    const allSegs = ["seg12","seg23","seg34","seg45","seg56a","seg56b","seg56c","seg67"];
-
-    function resetPipeline() {
-      allSteps.forEach((id, idx) => {
-        const el = document.getElementById(id);
-        el.classList.remove("visible", "active", "done");
-        if (idx === 0) el.classList.add("visible", "active");
-      });
-
-      allNotes.forEach((id, idx) => {
-        document.getElementById(id).classList.toggle("active", idx === 0);
-      });
-
-      allSegs.forEach(id => {
-        const path = document.getElementById(id);
-        const len = path.getTotalLength();
-        path.style.strokeDasharray = len;
-        path.style.strokeDashoffset = len;
-      });
-
-      const dot = document.getElementById("pulseDot");
-      dot.style.opacity = 0;
-      dot.setAttribute("cx", "210");
-      dot.setAttribute("cy", "120");
-    }
-
-    function setStepVisible(id) {
-      document.getElementById(id).classList.add("visible");
-    }
-
-    function setStepActive(id) {
-      allSteps.forEach(stepId => {
-        document.getElementById(stepId).classList.remove("active");
-      });
-      document.getElementById(id).classList.add("active");
-    }
-
-    function setStepDone(id) {
-      const el = document.getElementById(id);
-      el.classList.remove("active");
-      el.classList.add("done");
-    }
-
-    function setNotes(activeCount) {
-      allNotes.forEach((id, idx) => {
-        document.getElementById(id).classList.toggle("active", idx < activeCount);
-      });
-    }
-
-    function animateSegment(pathId, fromStepId, toStepId, duration, callback) {
-      const path = document.getElementById(pathId);
-      const dot = document.getElementById("pulseDot");
-      const len = path.getTotalLength();
-
-      setStepActive(fromStepId);
-      path.style.strokeDasharray = len;
-      path.style.strokeDashoffset = len;
-      dot.style.opacity = 1;
-
-      let start = null;
-
-      function frame(ts) {
-        if (!start) start = ts;
-        const p = Math.min((ts - start) / duration, 1);
-
-        path.style.strokeDashoffset = len * (1 - p);
-
-        const pt = path.getPointAtLength(len * p);
-        dot.setAttribute("cx", pt.x);
-        dot.setAttribute("cy", pt.y);
-
-        if (p < 1) {
-          requestAnimationFrame(frame);
-        } else {
-          if (toStepId !== fromStepId) {
-            setStepDone(fromStepId);
-            setStepVisible(toStepId);
-            setStepActive(toStepId);
-          }
-          if (callback) callback();
-        }
-      }
-
-      requestAnimationFrame(frame);
-    }
-
-    function runPipeline() {
-      resetPipeline();
-
-      setTimeout(() => {
-        animateSegment("seg12", "step1", "step2", 700, () => {
-          setNotes(1);
-
-          setTimeout(() => {
-            animateSegment("seg23", "step2", "step3", 700, () => {
-              setTimeout(() => {
-                animateSegment("seg34", "step3", "step4", 700, () => {
-                  setNotes(2);
-
-                  setTimeout(() => {
-                    animateSegment("seg45", "step4", "step5", 700, () => {
-                      setNotes(3);
-
-                      setTimeout(() => {
-                        animateSegment("seg56a", "step5", "step5", 320, () => {
-                          animateSegment("seg56b", "step5", "step5", 1000, () => {
-                            animateSegment("seg56c", "step5", "step6", 280, () => {
-                              setNotes(4);
-
-                              setTimeout(() => {
-                                animateSegment("seg67", "step6", "step7", 650, () => {
-                                  setNotes(5);
-                                  setTimeout(runPipeline, 1800);
-                                });
-                              }, 350);
-                            });
-                          });
-                        });
-                      }, 350);
-                    });
-                  }, 350);
-                });
-              }, 350);
-            });
-          }, 350);
-        });
-      }, 450);
-    }
-
-    runPipeline();
-  </script>
 </body>
 </html>
