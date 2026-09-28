@@ -72,32 +72,88 @@
     .footer { margin-top:82px; padding:30px 0 44px; border-top:1px solid var(--line); color:var(--sub); font-size:13px; }
     @media (max-width:800px) { .cards,.kpis,.split { grid-template-columns:1fr; } .flow { grid-template-columns:1fr; } .flow i { transform:rotate(90deg); justify-self:center; line-height:12px; } .affils { display:block; } .affils span { display:block; } .affils span + span::before { content:none; } }
     @media (max-width:580px) { .shell { width:min(100% - 28px,1120px); } .hero { padding-bottom:57px; } .intro { padding-top:45px; } .nav { align-items:flex-start; } .navlinks { gap:8px 13px; justify-content:flex-end; } .video-head,.video-foot { padding:12px 14px; } main section { padding-top:56px; } .bar-row { grid-template-columns:114px 1fr 45px; gap:8px; font-size:12px; } }
+
+    :root { color-scheme:light; }
+    body.dark { --ink:#e6f4f3; --sub:#acbec3; --line:#314c55; --paper:#0b1722; --white:#122532; --teal:#70dfce; --teal-light:#173b42; }
+    body.dark .lede { color:#bed0d4; }
+    body.dark th { background:#19343e; color:#d1e3e5; }
+    body.dark .flow div,body.dark .interactive-figure,body.dark .explorer { background:#12313a; }
+    body.dark .track { background:#29434d; }
+    body.dark tr.highlight { background:#17413f; color:#a6f5de; }
+    .navlinks { align-items:center; }
+    .nav button { border:1px solid #709e9f; color:#ecfbfa; border-radius:999px; background:#ffffff18; padding:7px 12px; cursor:pointer; }
+    .nav button:hover { background:#ffffff32; }
+    .hero-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:25px; }
+    .hero-actions a,.hero-actions span { border-radius:999px; padding:8px 15px; border:1px solid #86b5b7; color:#e5f7f3; font-size:13px; font-weight:700; text-decoration:none; }
+    .hero-actions a { background:#e1f9f0; color:#12494c; border-color:transparent; }
+    .video-placeholder { position:relative; margin:-34px auto 0; min-height:260px; display:grid; place-items:center; overflow:hidden; padding:38px; border-radius:20px; border:1px solid #355962; background:radial-gradient(circle at 25% 60%,#174b53 0,transparent 36%),radial-gradient(circle at 80% 25%,#214254 0,transparent 40%),#0c1725; color:#fff; text-align:center; box-shadow:0 28px 70px rgba(10,29,47,.2); }
+    .video-placeholder::before { content:""; position:absolute; inset:18px; border:1px dashed #5d8588; border-radius:12px; pointer-events:none; }
+    .video-placeholder > div { position:relative; max-width:550px; }
+    .play-mark { display:inline-grid; place-items:center; width:62px; height:62px; margin-bottom:14px; border:1px solid #9ad6ce; border-radius:50%; color:#a3e8dc; font-size:27px; padding-left:4px; }
+    .video-placeholder h2 { margin:0 0 8px; font-size:clamp(23px,3vw,34px); }
+    .video-placeholder p { color:#bed3d4; margin:0; }
+    .abstract-box { border-left:4px solid var(--teal); padding:12px 22px; background:var(--white); border-radius:0 13px 13px 0; max-width:950px; }
+    .abstract-box p { margin:0; }
+    .interactive-figure,.explorer { background:#fff; border:1px solid var(--line); border-radius:17px; padding:24px; margin-top:23px; }
+    .interactive-figure figcaption { color:var(--sub); font-size:13px; margin-top:14px; }
+    .figure-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:19px 0; }
+    .figure-step { background:var(--teal-light); border:1px solid #acd6d0; border-radius:12px; padding:17px; min-height:110px; color:var(--ink); text-align:left; cursor:pointer; font:inherit; }
+    .figure-step strong { display:block; margin-bottom:6px; color:var(--teal); }
+    .figure-step[aria-pressed="true"] { box-shadow:0 0 0 2px var(--teal); }
+    .figure-detail { border-radius:12px; background:var(--teal-light); padding:17px 20px; min-height:85px; }
+    .figure-detail strong { color:var(--teal); }
+    .figure-detail p { margin:3px 0 0; }
+    .control-row { display:flex; flex-wrap:wrap; gap:8px; margin:15px 0 20px; }
+    .control-row button { font:inherit; font-size:14px; padding:7px 12px; border-radius:999px; cursor:pointer; background:var(--white); color:var(--ink); border:1px solid var(--line); }
+    .control-row button[aria-pressed="true"] { background:var(--teal); border-color:var(--teal); color:#fff; }
+    .compare { display:grid; gap:11px; }
+    .compare-row { display:grid; grid-template-columns:160px 1fr 62px; align-items:center; gap:12px; font-size:14px; }
+    .compare-row .track { height:16px; }
+    .compare-row .fill { transition:width .35s ease; }
+    .compare-row:nth-child(1) .fill { background:#7893a2; }
+    .compare-row:nth-child(2) .fill { background:#92bbad; }
+    .compare-row b { text-align:right; }
+    .explorer > p { font-size:14px; color:var(--sub); }
+    details { background:var(--white); border:1px solid var(--line); border-radius:13px; padding:15px 20px; margin-top:10px; }
+    details summary { cursor:pointer; font-weight:750; }
+    details p { color:var(--sub); padding-top:12px; margin-bottom:0; }
+    .reference-list { line-height:1.75; padding-left:23px; }
+    .reference-list li { padding:4px 0; }
+    .skip { position:absolute; left:-10000px; top:auto; }
+    .skip:focus { left:10px; top:10px; background:#fff; color:#000; z-index:20; padding:8px; }
+    :focus-visible { outline:3px solid #e3b355; outline-offset:3px; }
+    @media(max-width:720px) { .nav { display:grid; grid-template-columns:1fr auto; align-items:center; } .navlinks { grid-column:1 / -1; grid-row:2; justify-content:flex-start; } .nav button { grid-column:2; grid-row:1; } }
+    @media(max-width:700px) { .figure-grid { grid-template-columns:1fr; } .compare-row { grid-template-columns:105px 1fr 50px; font-size:12px; gap:7px; } .video-placeholder { min-height:240px; padding:30px; } }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; } }
+
   </style>
 </head>
 <body>
+  <a class="skip" href="#abstract">Skip to content</a>
   <header class="hero">
     <div class="shell">
       <nav class="nav" aria-label="Main navigation">
         <a class="mark" href="#top">RAFC</a>
-        <div class="navlinks"><a href="#overview">Overview</a><a href="#method">Method</a><a href="#results">Results</a><a href="#hardware">Real robot</a></div>
+        <div class="navlinks"><a href="#abstract">Abstract</a><a href="#overview">Overview</a><a href="#method">Method</a><a href="#results">Results</a><a href="#hardware">Real robot</a></div>
+      <button type="button" id="theme-toggle" aria-label="Toggle color theme">Dark mode</button>
       </nav>
       <div id="top" class="intro">
         <p class="eyebrow">Robot manipulation · Generated video · Reliability</p>
         <h1>Reliability-Aware Future Conditioning for Temporally Robust Robot Manipulation</h1>
         <p class="subtitle">A generated future can show the right task at the wrong time. RAFC learns how much of that future to trust before each action.</p>
         <div class="affils" aria-label="Affiliations"><span>University of Bremen</span><span>University of North Texas</span><span>Toyota Motor North America</span></div>
+        <div class="hero-actions"><a href="#results">Explore results</a><a href="https://github.com/future-condition/future-condition.github.io">GitHub</a><span>Code coming soon</span><span>Checkpoints coming soon</span></div>
       </div>
     </div>
   </header>
 
   <div class="shell">
-    <section class="video-feature" aria-label="Research presentation video">
-      <div class="video-head"><strong>RAFC research presentation</strong><span>System overview · Method · Experiments</span></div>
-      <video controls playsinline preload="metadata" aria-label="RAFC research presentation"><source src="RAFC-SupVideo.mp4" type="video/mp4">Your browser does not support MP4 video.</video>
-      <div class="video-foot"><a href="RAFC-SupVideo.mp4" download>Download presentation video</a></div>
+    <section class="video-placeholder" aria-label="Presentation video placeholder">
+      <div><span class="play-mark" aria-hidden="true">▶</span><h2>Presentation video coming soon</h2><p>The research presentation will appear here when released.</p></div>
     </section>
 
     <main>
+      <section id="abstract"><p class="section-label">Paper abstract</p><h2>At a glance</h2><div class="abstract-box"><p>Generated task videos can provide useful horizon information to robot policies, but only when the depicted phase remains compatible with the robot’s actual execution. We show that temporal misalignment alone can turn a task-consistent generated future into harmful guidance: on CALVIN, a five-frame early shift reduces generated-future success from 69.8% to 34.2%, below the 54.0% future-free policy. We introduce RAFC, which compares a static fallback with nearby temporal hypotheses and learns, from task reward alone, how much dynamic future information to trust and which hypothesis to prefer. Across off-grid phase shifts, RAFC raises shifted success from 51.8% to 73.7%, while learned reliability adds 7.0 points beyond uniform averaging of the same candidate bank. The same mechanism improves three physical Franka tasks under natural timing variation from 26.7% to 56.7% aggregate success.</p></div></section>
       <section id="overview">
         <p class="section-label">The problem</p>
         <h2>The scene is right. The timing is wrong.</h2>
@@ -119,12 +175,22 @@
           <article class="card"><span class="num">03</span><h3>Residual control</h3><p>A bounded residual actor corrects the blended base action. The gate and actor learn jointly from task reward while the base behavior-cloning policy stays frozen.</p></article>
         </div>
         <div class="flow" aria-label="RAFC inference flow"><div>Generated future<br><small>one clip at initialization</small></div><i aria-hidden="true">➜</i><div>Static + three temporal candidates<br><small>shared frozen BC policy</small></div><i aria-hidden="true">➜</i><div>Trust gate + residual action<br><small>closed-loop control</small></div></div>
+      <figure class="interactive-figure" aria-label="Interactive conceptual method figure">
+      <h3>Interactive method figure</h3><p>Choose a stage to inspect what the controller does.</p>
+      <div class="figure-grid"><button type="button" class="figure-step" data-step="0" aria-pressed="true"><strong>01 · Generate future</strong><span>One 16-frame task-consistent future is generated at initialization by language grounding, digital-twin rollout, and video diffusion.</span></button><button type="button" class="figure-step" data-step="1" aria-pressed="false"><strong>02 · Evaluate phases</strong><span>A static fallback and local phase candidates at −2, 0, and +2 pass through the same frozen behavior-cloning policy.</span></button><button type="button" class="figure-step" data-step="2" aria-pressed="false"><strong>03 · Trust and act</strong><span>A learned gate weights dynamic trust and nearby phases.</span></button></div>
+      <div class="figure-detail" id="figure-detail" aria-live="polite"><strong>Generate future</strong><p>One 16-frame task-consistent future is generated at initialization by language grounding, digital-twin rollout, and video diffusion.</p></div>
+      <figcaption>Conceptual diagram reconstructed from the method description. The original paper figure is not reproduced here.</figcaption>
+    </figure><script type="application/json" id="figure-data">{"0": {"title": "Generate future", "description": "One 16-frame task-consistent future is generated at initialization by language grounding, digital-twin rollout, and video diffusion."}, "1": {"title": "Evaluate phases", "description": "A static fallback and local phase candidates at −2, 0, and +2 pass through the same frozen behavior-cloning policy."}, "2": {"title": "Trust and act", "description": "A learned gate weights dynamic trust and nearby phases. A bounded residual actor corrects the blended action using task reward."}}</script>
       </section>
 
       <section id="results">
         <p class="section-label">Simulation results</p>
         <h2>Recovery when the future is out of phase</h2>
         <p class="lede">CALVIN uses eight state-changing tasks and three training seeds. The global test shifts are deliberately off-grid relative to RAFC's local {−2, 0, +2} bank. The averages below exclude the zero-shift condition.</p>
+        <div class="explorer"><h3>Explore temporal offsets</h3><p>Select an imposed test shift to compare the same three controllers. Local RAFC candidates are −2, 0, and +2; imposed shifts are hidden from the gate.</p>
+       <div class="control-row" aria-label="Results condition"><button type="button" data-view="−5" aria-pressed="false">−5</button><button type="button" data-view="−3" aria-pressed="false">−3</button><button type="button" data-view="−1" aria-pressed="false">−1</button><button type="button" data-view="0" aria-pressed="false">0</button><button type="button" data-view="+1" aria-pressed="false">+1</button><button type="button" data-view="+3" aria-pressed="false">+3</button><button type="button" data-view="+5" aria-pressed="false">+5</button></div>
+       <p id="compare-caption" aria-live="polite"></p><div id="compare-chart" class="compare" role="group" aria-label="Success rates by method"></div></div>
+       <script type="application/json" id="explorer-data">{"−5": {"caption": "Five-frame early shift, success on eight CALVIN tasks. The future remains task-consistent, but is out of phase.", "values": [["Generated future", 34.2], ["Uniform averaging", 49.6], ["RAFC", 61.7]]}, "−3": {"caption": "Three-frame early shift, success on eight CALVIN tasks.", "values": [["Generated future", 52.9], ["Uniform averaging", 68.9], ["RAFC", 76.8]]}, "−1": {"caption": "One-frame early shift, success on eight CALVIN tasks.", "values": [["Generated future", 64.6], ["Uniform averaging", 78.4], ["RAFC", 81.2]]}, "0": {"caption": "Unshifted generated future, success on eight CALVIN tasks.", "values": [["Generated future", 69.8], ["Uniform averaging", 79.4], ["RAFC", 82.3]]}, "+1": {"caption": "One-frame late shift, success on eight CALVIN tasks.", "values": [["Generated future", 65.3], ["Uniform averaging", 79.0], ["RAFC", 81.5]]}, "+3": {"caption": "Three-frame late shift, success on eight CALVIN tasks.", "values": [["Generated future", 51.9], ["Uniform averaging", 68.8], ["RAFC", 76.0]]}, "+5": {"caption": "Five-frame late shift, success on eight CALVIN tasks.", "values": [["Generated future", 41.6], ["Uniform averaging", 55.5], ["RAFC", 65.2]]}}</script>
         <div class="panel">
           <h3>CALVIN temporal shifts</h3>
           <p>Task-balanced success (%), mean ± standard deviation across three seeds. The rightmost column averages the six nonzero shifts.</p>
@@ -160,9 +226,55 @@
           <tr class="highlight"><td>Aggregate</td><td>16/60 (26.7%)</td><td>34/60 (56.7%)</td></tr>
         </tbody></table></div><p class="note">Physical timing offsets are not imposed or measured in these trials; the controlled timing intervention is the CALVIN study above.</p></div>
       </section>
+<section id="details"><p class="section-label">Research details</p><h2>Protocol and references</h2>
+      <details><summary>Evaluation protocol</summary><p>Eight state-changing CALVIN tasks; 16-frame futures; three seeds (42, 43, 44); 500 simulation evaluation episodes per task and seed. Test offsets are imposed after the future is generated. The six nonzero offsets are evaluation-only and off-grid relative to the local candidate bank.</p></details>
+      <details><summary>Selected references</summary><ol class="reference-list"><li><a href="https://arxiv.org/abs/2112.03227" target="_blank" rel="noopener noreferrer">CALVIN: A Benchmark for Language-Conditioned Policy Learning for Long-Horizon Robot Manipulation Tasks</a></li><li><a href="https://arxiv.org/abs/2605.29864" target="_blank" rel="noopener noreferrer">LLM-Guided Future Hypotheses for Horizon-Aware Exploration in Multi-Step Robot Manipulation (FEC)</a></li></ol></details>
+      <details><summary>Availability</summary><p>Code and checkpoints will be released soon. The presentation video placeholder will be replaced when the video is released.</p></details>
+    </section>
     </main>
 
     <footer class="footer">RAFC · University of Bremen · University of North Texas · Toyota Motor North America</footer>
   </div>
+
+<script>
+(() => {
+  const body=document.body, toggle=document.querySelector('#theme-toggle');
+  const saved=localStorage.getItem('paper-site-theme');
+  if(saved==='dark') body.classList.add('dark');
+  const setLabel=()=>{toggle.textContent=body.classList.contains('dark')?'Light mode':'Dark mode';};
+  setLabel();
+  toggle.addEventListener('click',()=>{body.classList.toggle('dark');localStorage.setItem('paper-site-theme',body.classList.contains('dark')?'dark':'light');setLabel();});
+
+  const details=JSON.parse(document.querySelector('#figure-data').textContent);
+  const detailBox=document.querySelector('#figure-detail');
+  document.querySelectorAll('.figure-step').forEach(button=>button.addEventListener('click',()=>{
+    document.querySelectorAll('.figure-step').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+    const item=details[button.dataset.step];
+    detailBox.querySelector('strong').textContent=item.title;
+    detailBox.querySelector('p').textContent=item.description;
+  }));
+
+  const samples=JSON.parse(document.querySelector('#explorer-data').textContent);
+  const chart=document.querySelector('#compare-chart'), caption=document.querySelector('#compare-caption');
+  function show(key){
+    const sample=samples[key];
+    document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===key)));
+    caption.textContent=sample.caption;
+    chart.replaceChildren();
+    sample.values.forEach(([label,value])=>{
+      const row=document.createElement('div');row.className='compare-row';
+      const name=document.createElement('span');name.textContent=label;
+      const track=document.createElement('div');track.className='track';
+      const bar=document.createElement('span');bar.className='fill';bar.style.width=`${Math.max(0,Math.min(100,value))}%`;
+      track.append(bar);
+      const count=document.createElement('b');count.textContent=`${value.toFixed(1)}%`;
+      row.append(name,track,count);chart.append(row);
+    });
+  }
+  document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
+  show(Object.keys(samples)[0]);
+})();
+</script>
+
 </body>
 </html>
