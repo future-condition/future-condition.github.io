@@ -1,0 +1,40 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:03.000
+Hello everyone, in this video we'll introduce RAFC: Reliability-Aware Future Conditioning for Temporally Robust Robot Manipulation.
+
+00:00:03.000 --> 00:00:10.000
+We begin with an overview of the complete pipeline. Given the task and current scene, an ontology-guided language model identifies the target object, the interaction part, and the desired state change.
+
+00:00:10.000 --> 00:00:17.000
+A digital twin then generates a transparent, robot-free rollout of the intended object motion.
+
+00:00:17.000 --> 00:00:26.000
+Next, a mask-free video diffusion model combines this rollout with the initial robot observation to generate a future video showing both the robot and the scene.
+
+00:00:26.000 --> 00:00:38.000
+Finally, these future frames, together with the current observations, guide the robot policy.
+
+00:00:38.000 --> 00:00:43.000
+However, the generated future may not match the robot's actual progress. To address this, we introduce Reliability-Aware Future Conditioning, or RAFC.
+
+00:00:43.000 --> 00:00:49.000
+At each step, RAFC considers four candidates: a static fallback and three temporally shifted futures.
+
+00:00:49.000 --> 00:00:56.000
+A learned gate determines how much to trust the dynamic future and which timing best matches the robot's progress.
+
+00:00:56.000 --> 00:01:03.000
+RAFC then blends the candidates, while a residual reinforcement-learning policy corrects the resulting action.
+
+00:01:03.000 --> 00:01:10.500
+Both are trained jointly using task reward alone, allowing the robot to adapt to unreliable or misaligned future predictions.
+
+00:01:10.500 --> 00:01:16.000
+Next, we show how RAFC behaves during execution. The left panel shows a noisy and temporally misaligned generated future. The middle panel shows execution without RAFC, while the right panel shows how integrating RAFC improves the robot's response.
+
+00:01:16.000 --> 00:01:27.000
+We then evaluate the complete pipeline on the CALVIN and RoboCasa benchmarks. Across both benchmarks, RAFC outperforms the baselines, with especially clear gains under temporal misalignment.
+
+00:01:27.000 --> 00:01:35.710
+Finally, we evaluate RAFC on a real Franka robot across three manipulation tasks, where it continues to improve task success.
