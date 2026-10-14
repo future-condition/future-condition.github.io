@@ -1,0 +1,21 @@
+Hello everyone, in this video we'll introduce RAFC.
+
+Reliability-Aware Future Conditioning for Temporally Robust Robot Manipulation.
+
+We begin with an overview of the complete pipeline. Given the task and current scene, an ontology-guided language model identifies the target object, the interaction part, and the desired state change. A digital twin then generates a transparent, robot-free rollout of the intended object motion. Next, a mask-free video diffusion model combines this rollout with the initial robot observation to generate a future video showing both the robot and the scene. Finally, these future frames, together with the current observations, guide the robot policy.
+
+However, the generated future may not match the robot’s actual progress. To address this, we introduce Reliability-Aware Future Conditioning, or RAFC.
+
+At each step, RAFC considers four candidates: a static fallback and three temporally shifted futures.
+
+A learned gate determines how much to trust the dynamic future
+
+and which timing best matches the robot’s progress.
+
+RAFC then blends the candidates,
+
+while a residual reinforcement-learning policy corrects the resulting action. Both are trained jointly using task reward alone, allowing the robot to adapt to unreliable or misaligned future predictions.
+
+Next, we show how RAFC behaves during execution. The left panel shows a noisy and temporally misaligned generated future. The middle panel shows execution without RAFC, while the right panel shows how integrating RAFC improves the robot’s response. We then evaluate the complete pipeline on the CALVIN and RoboCasa benchmarks. Across both benchmarks, RAFC outperforms the baselines, with especially clear gains under temporal misalignment.
+
+Finally, we evaluate RAFC on a real Franka robot across three manipulation tasks, where it continues to improve task success.
